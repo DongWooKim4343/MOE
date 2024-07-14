@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .form-group button:disabled {
+            background-color: #ccc;
+        }
+        .error {
+            color: red;
+            margin-top: 5px;
+        }
+        .success {
+            color: green;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>User Registration</h2>
+    <form id="registrationForm">
+        <div class="form-group">
+            <label for="nickname">Nickname (ID)</label>
+            <input type="text" id="nickname" name="nickname" required>
+            <button type="button" id="checkNicknameBtn">Check Nickname</button>
+            <div id="nicknameCheckResult" class="error"></div>
+        </div>
+        <div class="form-group">
+            <label for="phoneNumber">Phone Number</label>
+            <input type="text" id="phoneNumber" name="phoneNumber" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+        <div class="form-group">
+            <button type="submit">Register</button>
+        </div>
+        <div id="formResult" class="error"></div>
+    </form>
+    <div id="databaseCheckResult" class="error"></div>
+</div>
+<script>
+    document.getElementById('checkNicknameBtn').addEventListener('click', () => {
+        const nickname = document.getElementById('nickname').value;
+        fetch(`/api/users/check-nickname?nickname=${nickname}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('nicknameCheckResult');
+                if (data.isAvailable) {
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = data.message;
+                } else {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = data.message;
+                }
+            });
+    });
+
+    document.getElementById('registrationForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            nickname: formData.get('nickname'),
+            phoneNumber: formData.get('phoneNumber'),
+            password: formData.get('password'),
+            confirmPassword: formData.get('confirmPassword')
+        };
+
+        // 비밀번호 길이 확인
+        if (data.password.length < 8) {
+            const resultDiv = document.getElementById('formResult');
+            resultDiv.classList.remove('success');
+            resultDiv.classList.add('error');
+            resultDiv.textContent = "비밀번호는 8자 이상이어야 합니다.";
+            return;
+        }
+
+        // 비밀번호 확인
+        if (data.password !== data.confirmPassword) {
+            const resultDiv = document.getElementById('formResult');
+            resultDiv.classList.remove('success');
+            resultDiv.classList.add('error');
+            resultDiv.textContent = "Passwords do not match.";
+            return;
+        }
+
+        fetch('/api/users/join', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('formResult');
+                if (data.isSuccess) {
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = data.message;
+
+                    // 사용자 등록 후 데이터베이스 확인
+                    checkUserInDatabase(data.user_id);
+                } else {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = data.message;
+                }
+            })
+            .catch(error => {
+                const resultDiv = document.getElementById('formResult');
+                resultDiv.classList.remove('success');
+                resultDiv.classList.add('error');
+                resultDiv.textContent = "회원가입 중 오류가 발생했습니다.";
+            });
+    });
+
+    function checkUserInDatabase(userId) {
+        fetch(`/api/users/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('databaseCheckResult');
+                if (data) {
+                    resultDiv.classList.remove('error');
+                    resultDiv.classList.add('success');
+                    resultDiv.textContent = "User successfully registered and found in the database.";
+                } else {
+                    resultDiv.classList.remove('success');
+                    resultDiv.classList.add('error');
+                    resultDiv.textContent = "User registration failed or user not found in the database.";
+                }
+            });
+    }
+</script>
+</body>
+</html>
