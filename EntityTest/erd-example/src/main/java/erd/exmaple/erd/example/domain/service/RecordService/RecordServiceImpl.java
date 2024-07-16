@@ -10,6 +10,7 @@ import erd.exmaple.erd.example.domain.repository.RecordPhotoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class RecordServiceImpl implements RecordService {
     private final RecordPhotoBodyRepository recordPhotoBodyRepository;
     private final RecordPhotoRepository recordPhotoRepository;
+    //private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional

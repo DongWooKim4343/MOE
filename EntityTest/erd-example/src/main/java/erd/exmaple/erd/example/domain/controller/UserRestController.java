@@ -2,7 +2,7 @@ package erd.exmaple.erd.example.domain.controller;
 
 import erd.exmaple.erd.example.domain.dto.UserRequestDTO;
 import erd.exmaple.erd.example.domain.dto.UserResponseDTO;
-import erd.exmaple.erd.example.domain.dto.NicknameCheckResultDTO;
+import erd.exmaple.erd.example.domain.dto.UserPhoneNumberCheckResultDTO;
 import erd.exmaple.erd.example.domain.service.userService.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +24,9 @@ public class UserRestController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/check-nickname")
-    public ResponseEntity<NicknameCheckResultDTO> checkNickname(@RequestParam String nickname) {
-        return ResponseEntity.ok(userService.checkNickname(nickname));
+    @GetMapping("/check-phoneNumber")
+    public ResponseEntity<UserPhoneNumberCheckResultDTO> checkPhoneNumber(@RequestParam String phoneNumber) {
+        return ResponseEntity.ok(userService.checkPhoneNumber(phoneNumber));
     }
 
     @GetMapping("/{userId}")
