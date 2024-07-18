@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -96,5 +97,22 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId)
                 .map(userConverter::convert)
                 .orElse(null);
+    }
+    @Override
+    public String resetPasswordByPhoneNumber(String phoneNumber) {
+        Optional<UserEntity> userOptional = userRepository.findByPhoneNumber(phoneNumber);
+        if (userOptional.isPresent()) {
+            UserEntity user = userOptional.get();
+            String newPassword = generateRandomPassword();
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return newPassword;
+        }
+        return null;
+    }
+
+    private String generateRandomPassword() {
+        // 랜덤 비밀번호 생성 로직 (8자리 랜덤 문자열)
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 }

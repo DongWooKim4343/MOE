@@ -1,181 +1,191 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Registration</title>
+    <title>Authentication Example</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            margin: 0;
         }
+
         .container {
-            background-color: white;
+            background-color: #fff;
             padding: 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .form-group {
-            margin-bottom: 15px;
+
+        h1 {
+            text-align: center;
+            color: #333;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
+
+        .form-container {
+            margin-bottom: 20px;
         }
-        .form-group input {
+
+        input {
             width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-        .form-group button {
-            padding: 10px 15px;
-            background-color: #007BFF;
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #5cb85c;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 4px;
             cursor: pointer;
         }
-        .form-group button:disabled {
-            background-color: #ccc;
+
+        button:hover {
+            background-color: #4cae4c;
         }
-        .error {
-            color: red;
-            margin-top: 5px;
-        }
-        .success {
-            color: green;
-            margin-top: 5px;
+
+        p {
+            color: #d9534f;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>User Registration</h2>
-    <form id="registrationForm">
-        <div class="form-group">
-            <label for="nickname">Nickname (ID)</label>
-            <input type="text" id="nickname" name="nickname" required>
-            <button type="button" id="checkNicknameBtn">Check Nickname</button>
-            <div id="nicknameCheckResult" class="error"></div>
-        </div>
-        <div class="form-group">
-            <label for="phoneNumber">Phone Number</label>
-            <input type="text" id="phoneNumber" name="phoneNumber" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required>
-        </div>
-        <div class="form-group">
-            <button type="submit">Register</button>
-        </div>
-        <div id="formResult" class="error"></div>
-    </form>
-    <div id="databaseCheckResult" class="error"></div>
+    <h1>Authentication Example</h1>
+
+    <!-- Registration Form -->
+    <div class="form-container">
+        <h2>Register</h2>
+        <input type="text" id="reg-phone" placeholder="Phone Number" required>
+        <input type="text" id="reg-nickname" placeholder="Nickname" required>
+        <input type="password" id="reg-password" placeholder="Password" required>
+        <input type="password" id="reg-confirm-password" placeholder="Confirm Password" required>
+        <button onclick="register()">Register</button>
+        <p id="reg-message"></p>
+    </div>
+
+    <!-- Phone Number Check Form -->
+    <div class="form-container">
+        <h2>Check Phone Number</h2>
+        <input type="text" id="check-phone" placeholder="Phone Number" required>
+        <button onclick="checkPhoneNumber()">Check</button>
+        <p id="check-message"></p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="form-container">
+        <h2>Login</h2>
+        <input type="text" id="login-phone" placeholder="Phone Number" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p id="login-message"></p>
+    </div>
+
+    <!-- Reset Password Form -->
+    <div class="form-container">
+        <h2>Reset Password</h2>
+        <input type="text" id="reset-phone" placeholder="Phone Number" required>
+        <input type="text" id="reset-confirm-phone" placeholder="Confirm Phone Number" required>
+        <button onclick="resetPassword()">Reset Password</button>
+        <p id="reset-message"></p>
+    </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    document.getElementById('checkNicknameBtn').addEventListener('click', () => {
-        const nickname = document.getElementById('nickname').value;
-        fetch(`/api/users/check-nickname?nickname=${nickname}`)
-            .then(response => response.json())
-            .then(data => {
-                const resultDiv = document.getElementById('nicknameCheckResult');
-                if (data.isAvailable) {
-                    resultDiv.classList.remove('error');
-                    resultDiv.classList.add('success');
-                    resultDiv.textContent = data.message;
-                } else {
-                    resultDiv.classList.remove('success');
-                    resultDiv.classList.add('error');
-                    resultDiv.textContent = data.message;
-                }
+    const apiBaseUrl = 'http://localhost:8080/api/users'; // API 기본 URL
+
+    // 회원가입 함수
+    async function register() {
+        const phoneNumber = document.getElementById('reg-phone').value;
+        const nickname = document.getElementById('reg-nickname').value;
+        const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-confirm-password').value;
+        const messageElement = document.getElementById('reg-message');
+
+        try {
+            const response = await axios.post(`${apiBaseUrl}/join`, {
+                phoneNumber,
+                nickname,
+                password,
+                confirmPassword
             });
-    });
 
-    document.getElementById('registrationForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = {
-            nickname: formData.get('nickname'),
-            phoneNumber: formData.get('phoneNumber'),
-            password: formData.get('password'),
-            confirmPassword: formData.get('confirmPassword')
-        };
-
-        // 비밀번호 길이 확인
-        if (data.password.length < 8) {
-            const resultDiv = document.getElementById('formResult');
-            resultDiv.classList.remove('success');
-            resultDiv.classList.add('error');
-            resultDiv.textContent = "비밀번호는 8자 이상이어야 합니다.";
-            return;
+            messageElement.style.color = 'green';
+            messageElement.innerText = response.data.message;
+        } catch (error) {
+            messageElement.style.color = 'red';
+            messageElement.innerText = error.response.data.message || 'Registration failed';
         }
+    }
 
-        // 비밀번호 확인
-        if (data.password !== data.confirmPassword) {
-            const resultDiv = document.getElementById('formResult');
-            resultDiv.classList.remove('success');
-            resultDiv.classList.add('error');
-            resultDiv.textContent = "Passwords do not match.";
-            return;
+    // 전화번호 중복 확인 함수
+    async function checkPhoneNumber() {
+        const phoneNumber = document.getElementById('check-phone').value;
+        const messageElement = document.getElementById('check-message');
+
+        try {
+            const response = await axios.get(`${apiBaseUrl}/check-phoneNumber`, {
+                params: { phoneNumber }
+            });
+
+            messageElement.style.color = response.data.isSuccess ? 'green' : 'red';
+            messageElement.innerText = response.data.message;
+        } catch (error) {
+            messageElement.style.color = 'red';
+            messageElement.innerText = error.response.data.message || 'Phone number check failed';
         }
+    }
 
-        fetch('/api/users/join', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-            .then(response => response.json())
-            .then(data => {
-                const resultDiv = document.getElementById('formResult');
-                if (data.isSuccess) {
-                    resultDiv.classList.remove('error');
-                    resultDiv.classList.add('success');
-                    resultDiv.textContent = data.message;
+    // 로그인 함수
+    async function login() {
+        const phoneNumber = document.getElementById('login-phone').value;
+        const password = document.getElementById('login-password').value;
+        const messageElement = document.getElementById('login-message');
 
-                    // 사용자 등록 후 데이터베이스 확인
-                    checkUserInDatabase(data.user_id);
-                } else {
-                    resultDiv.classList.remove('success');
-                    resultDiv.classList.add('error');
-                    resultDiv.textContent = data.message;
-                }
-            })
-            .catch(error => {
-                const resultDiv = document.getElementById('formResult');
-                resultDiv.classList.remove('success');
-                resultDiv.classList.add('error');
-                resultDiv.textContent = "회원가입 중 오류가 발생했습니다.";
+        try {
+            const response = await axios.post(`${apiBaseUrl}/login`, {
+                phoneNumber,
+                password
             });
-    });
 
-    function checkUserInDatabase(userId) {
-        fetch(`/api/users/${userId}`)
-            .then(response => response.json())
-            .then(data => {
-                const resultDiv = document.getElementById('databaseCheckResult');
-                if (data) {
-                    resultDiv.classList.remove('error');
-                    resultDiv.classList.add('success');
-                    resultDiv.textContent = "User successfully registered and found in the database.";
-                } else {
-                    resultDiv.classList.remove('success');
-                    resultDiv.classList.add('error');
-                    resultDiv.textContent = "User registration failed or user not found in the database.";
-                }
+            messageElement.style.color = 'green';
+            messageElement.innerText = response.data.message || 'Login successful!';
+
+            // 로그인 성공 시 JWT 토큰을 로컬 스토리지에 저장
+            localStorage.setItem('jwt', response.data.jwt);
+        } catch (error) {
+            messageElement.style.color = 'red';
+            messageElement.innerText = error.response.data.message || 'Login failed';
+        }
+    }
+
+    // 비밀번호 재설정 함수
+    async function resetPassword() {
+        const phoneNumber = document.getElementById('reset-phone').value;
+        const confirmPhoneNumber = document.getElementById('reset-confirm-phone').value;
+        const messageElement = document.getElementById('reset-message');
+
+        try {
+            const response = await axios.post(`${apiBaseUrl}/reset-password`, {
+                phoneNumber,
+                confirmPhoneNumber
             });
+
+            messageElement.style.color = 'green';
+            messageElement.innerText = response.data;
+        } catch (error) {
+            messageElement.style.color = 'red';
+            messageElement.innerText = error.response.data || 'Failed to reset password';
+        }
     }
 </script>
 </body>

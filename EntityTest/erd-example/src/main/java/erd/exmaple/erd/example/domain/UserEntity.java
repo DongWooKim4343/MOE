@@ -32,14 +32,14 @@ public class UserEntity extends BaseEntity {
 private String user_id;*/
 
     @Column(nullable = false,length = 255)
-    private String password;
+    private String password; //비밀번호 암호화시 길이 차지
 
 
     @Column(name = "phone_number", nullable = false,length = 11)
     private String phoneNumber; //카멜케이스로 수정
 
     @Column(nullable = false,length = 100)
-    private String nickname; //닉네임을 아이디로 사용
+    private String nickname;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(50)")

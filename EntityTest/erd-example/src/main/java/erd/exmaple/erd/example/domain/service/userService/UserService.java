@@ -8,4 +8,6 @@ public interface UserService {
     UserResponseDTO.JoinResultDTO joinUser(UserRequestDTO.JoinDto joinDto);
     UserPhoneNumberCheckResultDTO checkPhoneNumber(String phoneNumber);
     UserResponseDTO getUserById(Long userId);
+    //boolean resetPasswordByPhoneNumber(String phoneNumber, String newPassword);
+    String resetPasswordByPhoneNumber(String phoneNumber);
 }
