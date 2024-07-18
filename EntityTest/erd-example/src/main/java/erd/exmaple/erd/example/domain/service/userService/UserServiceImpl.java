@@ -11,7 +11,8 @@ import erd.exmaple.erd.example.domain.enums.Ad;
 import erd.exmaple.erd.example.domain.enums.LoginStatus;
 import erd.exmaple.erd.example.domain.enums.Marketing;
 import lombok.RequiredArgsConstructor;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserConverter userConverter;
-    //private final PasswordEncoder passwordEncoder; // PasswordEncoder 주입
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(); // PasswordEncoder 주입 // PasswordEncoder 주입
 
     @Override
     public UserResponseDTO.JoinResultDTO joinUser(UserRequestDTO.JoinDto joinDto) {
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
         // UserEntity 생성
         UserEntity newUser = UserEntity.builder()
-                .password(joinDto.getPassword()) // 비밀번호 암호화 해야하는디..
+                .password(passwordEncoder.encode(joinDto.getPassword())) // 비밀번호 암호화 ....
                 .phoneNumber(joinDto.getPhoneNumber())
                 .nickname(joinDto.getNickname())
                 .status(LoginStatus.ACTIVE)

@@ -19,11 +19,11 @@ public class UserRequestDTO {
     public static class JoinDto {
 
         @NotEmpty(message = "비밀번호는 필수 항목입니다.")
-        @Size(min = 8, message = "비밀번호는 최소 8자 이상이어야 합니다.")
+        @Size(min = 8, max = 255,message = "비밀번호는 최소 8자 이상이어야 합니다.")
         private String password;
 
         @NotEmpty(message = "비밀번호 확인은 필수 항목입니다.")
-        @Size(min = 8)
+        @Size(min = 8, max = 255)
         private String confirmPassword; // 비밀번호 확인 필드 추가
 
         @NotEmpty(message = "핸드폰 번호는 필수 항목입니다.")
